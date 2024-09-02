@@ -1,0 +1,23 @@
+# Ignorar arquivos e diretórios gerados temporários ou específicos do sistema
+
+# Arquivos de log
+*.log
+
+# Arquivos temporários
+*.tmp
+*.swp
+
+# Diretórios do sistema
+.DS_Store
+Thumbs.db
+
+# Arquivos de configuração local do Docker
+*.env
+
+# Arquivos gerados pelo Docker
+docker-compose.override.yml
+docker-compose.local.yml
+
+# Diretórios e arquivos de dependências (se houver)
+node_modules/
+vendor/
