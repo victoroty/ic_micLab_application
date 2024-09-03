@@ -1,0 +1,10 @@
+{
+  "Name" : "MyOrthanc",
+  "RemoteAccessAllowed" : true,
+  "RegisteredUsers" : {
+
+     "you" : "yourpassword"
+
+  },
+  "DicomPort": 104
+}
