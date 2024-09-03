@@ -21,8 +21,6 @@ Para funcionamento e mais informações do funcionamento do servidor PACs Orthan
   
     cd C:/Users/Voce/IC_MICLab
   
-  Não se esqueceça que se estiver usando o Windows, é necessário utilizar a barra `/` em vez de `\`.
-  
   Em seguida, insira o seguinte comando: 
 
     docker build -t 'nomedaimagemescolhida' .
