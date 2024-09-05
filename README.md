@@ -12,6 +12,7 @@ para, posteriormente, envio e análise de arquivos DICOM (*Digital Imaging and C
 - configuration.json: Arquivo essencial para configuração do servidor OrthanC. Nele estão denomeadas informações como as ports que serão utilizadas assim como os usuários registrados.
 - scripts: Pasta que contém o script em Python (denomeado script.py) para envio de arquivos DICOM, assim como análise por XRayTorchVision e a criação de DICOM SR (*Structured Reports*). Ambas a pasta e o script são **essenciais** para funcionamento do container.
 - DICOM: Pasta para armazenar os arquivos DICOM. **Essencial** para funcionamento do script Python, e portanto os arquivos deverão estar localizados aqui.
+- results: Pasta para armazenar os arquivos .json de resultados de análise da biblioteca TorchXRayVision. **Essencial** para o funcionamento do script Python, porém não é necessário ter nenhum arquivo dentro (o próprio container salvará arquivos lá).
 ## Avisos
 - O *Dockerfile* para criação da imagem utiliza um *Virtual Environment* para o plugin de Python, garantindo seu funcionamento em computadores protegidos pela rede/organização.
 - Para funcionamento do script de Python, é necessário um espaço consideravelmente alto disponível (para segurança, em torno de 8-10 GB), devido ao download de todas as bibliotecas e a criação dos *Structured Reports*.
@@ -36,9 +37,10 @@ Não se esqueça do ` .` no final! A construção deve demorar cerca de 100 à 2
 ### 3°: Run da imagem criada
 Agora para o Docker iniciar o container com a imagem que criamos, devemos utilizar o seguinte comando:
 
-    docker run -d --name 'nome' -p 8042:8042 -p 8043:8043 --rm 'nomedaimagemescolhida'
+    docker run -d -v path\to\results:/etc/orthanc/results --name myorthanc -p 8042:8042 -p 8043:8043 --rm customorthanc
 
 - `-d`: Abreviação para *detached*. Permite rodar o container em segundo fundo, permitindo o uso do terminal.
+- `v`: Permite compartilhar arquivos gerados dentro do container para fora dele. Necessário para a função *analise*. Sempre deve ser seguido pelo diretório que possui a pasta *results* seguido por */etc/orthanc/results* (definido pelo arquivo de configuração).
 - `--name`: Nomeia o container, facilitando o uso posteriormente. Deve ser seguido por algum nome escolhido.
 - `-p`: Mapeia ports entre o host e o container, permitindo acessar serviços do container fora dele. Deve ser seguido com a port do host:port do container.
 - `--rm`: Remove a imagem e traços do container após utilizá-lo, liberando espaço (opcional).
@@ -76,6 +78,6 @@ E deverá aparecer no terminal o 'nome' escolhido para imagem. Também é recome
 
     docker system prune -a -f
 
-Para remoção de quaisquers arquivos ainda presentes no computador após a utilização do script. O comando `system` garante que `prune` (o operador de remoção) será de todos os arquivos, não apenas de uma imagem por exemplo, e `-a` e `-f` garantem que será feito no sistema inteiro e para qualquer 'tipo' de arquivo (inoperante ou não), respectivamente.
+Para remoção de quaisquers arquivos ainda presentes no computador após a utilização do script. O comando *system prune* lista os itens a serem removidos, e `-a` e `-f` garantem que serão removidas quaisquer imagens não utilizadas e pula o prompt de confirmação, respectivamente.
 
 ## Dificuldades/Considerações
