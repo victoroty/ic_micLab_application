@@ -30,17 +30,17 @@ Em seguida, insira o seguinte comando:
 
     docker build -t 'nomedaimagemescolhida' .
 
-- `t`: Abreviação para *tag*. Deve ser seguido pelo nome escolhido para imagem que o Docker irá criar
+- `-t`: Abreviação para *tag*. Deve ser seguido pelo nome escolhido para imagem que o Docker irá criar
 
-Não se esqueça do ` .` no final! A construção deve demorar cerca de 100 à 200segs. O terminal deve indicar a construção da imagem. 
+Não se esqueça do ` .` no final! A construção deve demorar cerca de 100 a 250segs. O terminal deve indicar a construção da imagem. 
 
 ### 3°: Run da imagem criada
 Agora para o Docker iniciar o container com a imagem que criamos, devemos utilizar o seguinte comando:
 
-    docker run -d -v path\to\results:/etc/orthanc/results --name myorthanc -p 8042:8042 -p 8043:8043 --rm customorthanc
+    docker run -d -v path\to\results:/etc/orthanc/results --name myorthanc -p 8042:8042 --rm customorthanc
 
 - `-d`: Abreviação para *detached*. Permite rodar o container em segundo fundo, permitindo o uso do terminal.
-- `v`: Permite compartilhar arquivos gerados dentro do container para fora dele. Necessário para a função *analise*. Sempre deve ser seguido pelo diretório que possui a pasta *results* seguido por */etc/orthanc/results* (definido pelo arquivo de configuração).
+- `-v`: Permite compartilhar arquivos gerados dentro do container para fora dele. Necessário para a função *analise*. Sempre deve ser seguido pelo diretório que possui a pasta *results* seguido por */etc/orthanc/results* (definido pelo arquivo de configuração).
 - `--name`: Nomeia o container, facilitando o uso posteriormente. Deve ser seguido por algum nome escolhido.
 - `-p`: Mapeia ports entre o host e o container, permitindo acessar serviços do container fora dele. Deve ser seguido com a port do host:port do container.
 - `--rm`: Remove a imagem e traços do container após utilizá-lo, liberando espaço (opcional).
@@ -54,20 +54,20 @@ Primeiro, verifique se o diretório com o Dockerfile possui a pasta /scripts com
 
     `docker exec -it 'nome' python /usr/local/bin/script.py`
   
-- `it`: Abreviação para *interactive*. Permite interagir com o próprio shell do container através do terminal.
+- `-it`: Abreviação para *interactive*. Permite interagir com o próprio shell do container através do terminal.
 - `python`: Inicia o plugin Python da imagem. Deve ser seguido com o diretório, especificado no configuration.json, onde estará o script Python após o início do container.
 
 Logo após este comando, espere um tempo e deverá aparecer a seguinte frase:
 
-    Digite:
-    -'upload' para enviar os arquivos .dcm localizados na pasta DICOM
-    -'delete' para deletar os arquivos .dcm localizados no servidor OrthanC
-    -'analise' para fazer a análise dos arquivos .dcm localizados na pasta DICOM
-    -'sr' para fazer a criação dos SRs dos arquivos.dcm localizados na pasta DICOM e enviá-los para o servidor OrthanC
+    Selecione uma opção:
+    1. Enviar arquivos DICOM
+    2. Analisar arquivos DICOM
+    3. Criar e enviar arquivos SR DICOM
+    4. Deletar todos os arquivos DICOM do servidor Orthanc
+    5. Sair
+    Digite o número da sua escolha: 
 
-Após qualquer comando utilizado, aparecerão informações relevantes ao que foi escolhido. Se for desejado realizar qualquer outra operação, será sempre **necessário** utilizar o comando:
-
-    `docker exec -it 'nome' python /usr/local/bin/script.py`
+Após qualquer comando utilizado, aparecerão informações relevantes ao que foi escolhido. Após uma escolha, o programa voltará para essa tela inicial até que escolha a opção 5.
 
 ### 5°: Finalização do container
 Para finalização do container, é necessário a utilização do comando:
@@ -81,3 +81,11 @@ E deverá aparecer no terminal o 'nome' escolhido para imagem. Também é recome
 Para remoção de quaisquers arquivos ainda presentes no computador após a utilização do script. O comando *system prune* lista os itens a serem removidos, e `-a` e `-f` garantem que serão removidas quaisquer imagens não utilizadas e pula o prompt de confirmação, respectivamente.
 
 ## Dificuldades/Considerações
+### 1) Configurar e rodar um PACs OrthanC, utilizando Docker.
+Como as noções de Docker, imagens e containeres eram relativamente novas para mim, o processo de criação do Dockerfile para a configuração do servidor OrthanC foi relativamente longa. Nesta etapa, o [livro oficial para imagens](https://orthanc.uclouvain.be/book/users/docker.html) e a [página de configuração para o arquivo .json](https://orthanc.uclouvain.be/book/users/configuration.html) foram essenciais. No começo, o servidor local nem iniciava, e após, não tinha como logar. A utilização do [forum oficial do Docker](https://forums.docker.com/) também foi muito importante, pois lá recebi o direcionamento de outros programadores mais experientes.
+### 2) Utilizar um script Python para enviar arquivos DICOM
+Esta etapa foi relativamente mais simples, devido estar mais acostumado com a programação em Python. Porém, a utilização do REST API era nova, então foi necessário mais um processo de aprendizado. Um detalhe importante foi o aperfeiçoamento das função de upload, pois devido à outras funções do script, ela rotinamente enviava mais arquivos do que o necessário.
+### 3) Utilizando os mesmos arquivos DICOM, computar os resultados de classificação de achados utilizando o modelo pré-treinado e instruções encontradas na seção "Get Started"  do README do TorchXRayVision. 
+Nesta etapa ocorreu o erro comentado pelo professor Diedre no e-mail, onde a aplicação não funcionava devido a falta de um terceiro eixo necessário para conversão de uma imagem colorida para grayscale. Foi implementado a função que extrai o array de pixeis e normaliza automaticamente, implementada um código para lidar com os casos de arrays 2D e feito a conversão do número np.float32() para o float padrão do Python.
+### 4)4) EXTRA: Criar um DICOM SR (Structured Report) para cada arquivo DICOM com os resultados do modelo, e enviar os DICOM SR para o PACS local OrthanC. Note que o DICOM SR deve ser do paciente/estudo/série correta.
+Extensivamente a etapa mais díficil, onde diversos problemas foram encontrados durante toda a etapa, principalmente relacionados à parâmetros não preenchidos necessários como 'SOPClassUID', 'Dataset.is_little_endian', 'Dataset.is_implicit_VR', etc. De longe o maior problema foi a aparição de '*instace:null*' após conseguir fazer o upload dos *SR*s, correlacionada à uma criação errada dos SRs. Para identificar os parâmetros errados ou não preenchidos, utilizei de bibliotecas e toolkits como *dicom-validator* ou *dcmtk* para verificar as *tags* dos *SR*s criados.
