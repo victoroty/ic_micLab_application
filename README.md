@@ -37,7 +37,7 @@ Não se esqueça do ` .` no final! A construção deve demorar cerca de 100 a 25
 ### 3°: Run da imagem criada
 Agora para o Docker iniciar o container com a imagem que criamos, devemos utilizar o seguinte comando:
 
-    docker run -d -v path\to\results:/etc/orthanc/results --name myorthanc -p 8042:8042 --rm customorthanc
+    docker run -d -v caminho\para\pastaresults:/etc/orthanc/results --name myorthanc -p 8042:8042 --rm customorthanc
 
 - `-d`: Abreviação para *detached*. Permite rodar o container em segundo fundo, permitindo o uso do terminal.
 - `-v`: Permite compartilhar arquivos gerados dentro do container para fora dele. Necessário para a função *analise*. Sempre deve ser seguido pelo diretório que possui a pasta *results* seguido por */etc/orthanc/results* (definido pelo arquivo de configuração).
