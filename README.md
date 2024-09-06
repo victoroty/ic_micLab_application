@@ -19,7 +19,7 @@ para, posteriormente, envio e análise de arquivos DICOM (*Digital Imaging and C
 - O *Dockerfile* para criação da imagem utiliza um *Virtual Environment* para o plugin de Python, garantindo seu funcionamento em computadores protegidos pela rede/organização.
 - Para funcionamento do script de Python, é necessário um espaço consideravelmente alto disponível (para segurança, em torno de 8-10 GB), devido ao download de todas as bibliotecas e a criação dos *Structured Reports*.
 - A imagem criada pelo *Dockerfile* utiliza a configuração proveniente do arquivo *configuration.json*, onde se faz a criação de um usuário para fazer login no servidor localizado na porta escolhida (O default é a porta 8042), e este usuário também é utilizado no script de Python para fazer o upload/delete dos arquivos enviados. O usuário default é (login:senha) `you:yourpassword` e se for feita a alteração no arquivo *.json*, deverá ser feita a alteração no script de Python (logo no início do script, essa informação está numa variável).
-- O script possui 4 funções:
+- O script da versão não simplificada possui 4 funções:
     -`upload()`: Faz o upload de todos os arquivos .dcm contidos na pasta DICOM.
     -`delete()`: Deleta todos os arquivos presentes no servidor local OrthanC.
     -`create_sr()`: Cria arquivos *SR*s baseados nos arquivos .dcm presentes na pasta DICOM em conjunto com o resultado das análises feito pela biblioteca XRayTorch, posteriormente fazendo o upload automático para o servidor, e exportando uma cópia desses *SR*s para a pasta *SR* local.
@@ -44,11 +44,11 @@ Não se esqueça do ` .` no final! A construção deve demorar cerca de 100 a 25
 ### 3°: Run da imagem criada
 Agora para o Docker iniciar o container com a imagem que criamos, devemos utilizar o seguinte comando:
 
-    docker run -d -v X:\Users\caminho\para\pasta\SR:/etc/orthanc/SR -v X:\Users\caminho\para\pasta\results:/etc/orthanc/results --name myorthanc -p 8042:8042  --rm customorthanc
+    docker run -d -v X:\Users\caminho\para\pasta\SR:/etc/orthanc/SR -v X:\Users\caminho\para\pasta\results:/etc/orthanc/results --name 'nome' -p 8042:8042  --rm 'nomedaimagemescolhida'
 
 Ou para versão simplificada, apenas:
 
-    docker run -d --name myorthanc -p 8042:8042 --rm customorthanc
+    docker run -d --name 'nome' -p 8042:8042 --rm 'nomedaimagemescolhida'
 
 - `-d`: Abreviação para *detached*. Permite rodar o container em segundo fundo, permitindo o uso do terminal.
 - `-v`: Permite compartilhar arquivos gerados dentro do container para fora dele. Necessário para a função *analyze*, para salvar o arquivo *.json* que contém os resultados dos modelos pré-treinados. Sempre deve ser seguido pelo diretório que possui a pasta *results* seguido por */etc/orthanc/results* (definido pelo arquivo de configuração).
