@@ -8,15 +8,22 @@ Como uma das fases de avaliação do processo seletivo para oportunidade de Inic
 a MICLab, fomos requeridos estudar, compreender e configurar um servidor PACs (*Picture Archiving and Communication System*)
 para, posteriormente, envio e análise de arquivos DICOM (*Digital Imaging and Communications in Medicine*) e SR (*Structured Report*).
 ### Arquivos
+- simplified_Docker: Pasta que contém uma versão simplificada dos arquivos *Dockerfile*, *configuration.json* e o script de Python *script.py*, além de outra pasta DICOM para os arquivos .dcm. Nesta versão, a aplicação e o script fazem o upload dos arquivos .dcm contidos na pasta DICOM; deleta *todos* os arquivos presentes no servidor local; faz a análise XRayTorch dos arquivos .dcm (porém não exporta um *json* com os resultados para uma pasta local) e cria arquivos *SR*s baseados nestes arquivos .dcm, junto com os resultados das análises, e automaticamente exporta para o servidor (porém não exporta uma cópia para uma pasta local).
 - Dockerfile: Arquivo para construção de uma imagem, instalação das bibliotecas utilizadas no script Python e mais.
 - configuration.json: Arquivo essencial para configuração do servidor OrthanC. Nele estão denomeadas informações como as ports que serão utilizadas assim como os usuários registrados.
 - scripts: Pasta que contém o script em Python (denomeado script.py) para envio de arquivos DICOM, assim como análise por XRayTorchVision e a criação de DICOM SR (*Structured Reports*). Ambas a pasta e o script são **essenciais** para funcionamento do container.
 - DICOM: Pasta para armazenar os arquivos DICOM. **Essencial** para funcionamento do script Python, e portanto os arquivos deverão estar localizados aqui.
 - results: Pasta para armazenar os arquivos .json de resultados da função de análise da biblioteca TorchXRayVision. **Essencial** para o funcionamento do script Python, porém não é necessário ter nenhum arquivo dentro (o próprio container salvará arquivos lá).
+- SR: Pasta para armazenar os arquivos *SR*s criados. **Essencial** para o funcionamento do script de Python, porém não é necessário ter nenhum arquivo dentro (o próprio container salvará arquivos lá).
 ## Avisos
 - O *Dockerfile* para criação da imagem utiliza um *Virtual Environment* para o plugin de Python, garantindo seu funcionamento em computadores protegidos pela rede/organização.
 - Para funcionamento do script de Python, é necessário um espaço consideravelmente alto disponível (para segurança, em torno de 8-10 GB), devido ao download de todas as bibliotecas e a criação dos *Structured Reports*.
 - A imagem criada pelo *Dockerfile* utiliza a configuração proveniente do arquivo *configuration.json*, onde se faz a criação de um usuário para fazer login no servidor localizado na porta escolhida (O default é a porta 8042), e este usuário também é utilizado no script de Python para fazer o upload/delete dos arquivos enviados. O usuário default é (login:senha) `you:yourpassword` e se for feita a alteração no arquivo *.json*, deverá ser feita a alteração no script de Python (logo no início do script, essa informação está numa variável).
+- O script possui 4 funções:
+    -`upload()`: Faz o upload de todos os arquivos .dcm contidos na pasta DICOM.
+    -`delete()`: Deleta todos os arquivos presentes no servidor local OrthanC.
+    -`create_sr()`: Cria arquivos *SR*s baseados nos arquivos .dcm presentes na pasta DICOM em conjunto com o resultado das análises feito pela biblioteca XRayTorch, posteriormente fazendo o upload automático para o servidor, e exportando uma cópia desses *SR*s para a pasta *SR* local.
+    -`analyze()`: Exporta um *.json* com o resultado das análises feito pela biblioteca XRayTorch para a pasta *results* local.
 ## Instruções
 Para funcionamento e mais informações do funcionamento do servidor PACs OrthanC, assim como o script de Python, segue instruções e detalhes sobre a aplicação:
 ### 1°: Instalação do Docker e download ou `git clone` do repositório
