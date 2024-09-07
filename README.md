@@ -7,29 +7,38 @@ Quaisquer dúvidas, favor me chamar em v248206@dac.unicamp.br!
 Como uma das fases de avaliação do processo seletivo para oportunidade de Iniciação Científica com
 a MICLab, fomos requeridos estudar, compreender e configurar um servidor PACs (*Picture Archiving and Communication System*)
 para, posteriormente, envio e análise de arquivos DICOM (*Digital Imaging and Communications in Medicine*) e SR (*Structured Report*).
+
+Foram desenvolvidas duas versões para aplicação: *main*, com algumas funcionalidades extras visando o *export* de arquivos para pasta local e *simplified*, visando ser mais leve e mais fácil de configuração.
 ### Arquivos
+### Em ambas versões
 - Dockerfile: Arquivo para construção de uma imagem, instalação das bibliotecas utilizadas no script Python e mais.
 - configuration.json: Arquivo essencial para configuração do servidor OrthanC. Nele estão denomeadas informações como as ports que serão utilizadas assim como os usuários registrados.
-- scripts: Pasta que contém o script em Python (denomeado script.py) para envio de arquivos DICOM, assim como análise por XRayTorchVision e a criação de DICOM SR (*Structured Reports*). Ambas a pasta e o script são **essenciais** para funcionamento do container.
-- DICOM: Pasta para armazenar os arquivos DICOM. **Essencial** para funcionamento do script Python, e portanto os arquivos deverão estar localizados aqui.
+- scripts: Pasta que contém o script em Python (denomeado script.py) para envio de arquivos DICOM, assim como análise por TorchXRayVision e a criação de DICOM SR (*Structured Reports*). Ambas a pasta e o script são **essenciais** para funcionamento do container.
+- DICOM: Pasta para armazenar os arquivos DICOM. **Essencial** para funcionamento do script Python, e portanto os arquivos .dcm deverão estar localizados aqui.
+- resultados_analise_xraytorch_exemplo.json: Arquivo de exemplo com resultados de uma análise pela biblioteca TorchXRayVision.
+### Para *main*
 - results: Pasta para armazenar os arquivos .json de resultados da função de análise da biblioteca TorchXRayVision. **Essencial** para o funcionamento do script Python, porém não é necessário ter nenhum arquivo dentro (o próprio container salvará arquivos lá).
 - SR: Pasta para armazenar os arquivos *SR*s criados. **Essencial** para o funcionamento do script de Python, porém não é necessário ter nenhum arquivo dentro (o próprio container salvará arquivos nesta pasta).
-- simplified_Docker: Pasta que contém uma versão simplificada dos arquivos *Dockerfile*, *configuration.json* e o script de Python *script.py*, além de outra pasta DICOM para os arquivos .dcm. Nesta versão, a aplicação faz o upload e delete normalmente, porém a análise XRayTorch dos arquivos .dcm não exporta um *json* com os resultados para uma pasta local (apenas realiza um *print* dos resultados), assim como a função de criar arquivos *SR*s baseados nestes arquivos .dcm, junto com os resultados das análises (os *SR*s são exportados automaticamente para o servidor, e não para uma pasta local).
 ## Avisos
-- O *Dockerfile* para criação da imagem utiliza um *Virtual Environment* para o plugin de Python, garantindo seu funcionamento em computadores protegidos pela rede/organização.
+- O *Docker* utiliza de *WSL2* (*Windows Subsystem for Linux*) para funcionamento.
+- O *Dockerfile* para criação da imagem utiliza um *Virtual Environment* para o plugin de Python, garantindo seu funcionamento em computadores protegidos pela rede/organização. 
 - Para funcionamento do script de Python, é necessário um espaço consideravelmente alto disponível (para segurança, em torno de 6 GB), devido ao download de todas as bibliotecas e a criação dos *Structured Reports*.
 - A imagem criada pelo *Dockerfile* utiliza a configuração proveniente do arquivo *configuration.json*, onde se faz a criação de um usuário para fazer login no servidor localizado na porta escolhida (O default é a porta 8042), e este usuário também é utilizado no script de Python para fazer o upload/delete dos arquivos enviados. O usuário default é (usuário:senha) `you:yourpassword` e se for feita a alteração no arquivo *.json*, deverá ser feita a alteração no script de Python (logo no início do script, essa informação está numa variável).
 - O script da versão não simplificada possui 4 funções:
-    -`upload()`: Faz o upload de todos os arquivos .dcm contidos na pasta DICOM.
-    -`delete()`: Deleta todos os arquivos presentes no servidor local OrthanC.
-    -`create_sr()`: Cria arquivos *SR*s baseados nos arquivos .dcm presentes na pasta DICOM em conjunto com o resultado das análises feito pela biblioteca XRayTorch, posteriormente fazendo o upload automático para o servidor, e exportando uma cópia desses *SR*s para a pasta *SR* local.
-    -`analyze()`: Exporta um *.json* com o resultado das análises feito pela biblioteca XRayTorch para a pasta *results* local.
+  
+    -`upload`: Faz o upload de todos os arquivos .dcm contidos na pasta DICOM.
+
+    -`analyze`: Exporta um *.json* com o resultado das análises feito pela biblioteca TorchXRay para a pasta *results* local.
+  
+    -`create`: Cria arquivos *SR*s baseados nos arquivos .dcm presentes na pasta DICOM em conjunto com o resultado das análises feito pela biblioteca XRayTorch, posteriormente fazendo o upload automático para o servidor, e exportando uma cópia desses *SR*s para a pasta *SR* local.
+
+    -`delete`: Deleta todos os arquivos presentes no servidor local OrthanC.
 ## Instruções
-Para funcionamento e mais informações do funcionamento do servidor PACs OrthanC, assim como o script de Python, segue instruções e detalhes sobre a aplicação:
+Para funcionamento e mais informações da configuração do servidor PACs OrthanC, assim como o script de Python, segue instruções e detalhes sobre a aplicação:
 ### 1°: Instalação do Docker e download ou `git clone` do repositório
-Faça o download do [Docker Desktop](https://docs.docker.com/desktop/install/windows-install/) e em seguida o download dos arquivos presentes neste repositório (`git clone` também é possível).
+Faça o download do [Docker Desktop](https://docs.docker.com/desktop/install/windows-install/) e em seguida o download dos arquivos presentes neste repositório (ou `git clone`).
 ### 2°: Build da imagem
-Através do seu terminal, ou pelo terminal presente no próprio *GUI* do Docker, primeiro localize o diretório onde está presente os arquivos deste repositório (ou onde foi clonado). Por exemplo:
+Através do seu terminal, ou pelo terminal presente no próprio *GUI* do Docker, primeiro localize o diretório onde estão presentes os arquivos deste repositório (ou onde foi clonado). Por exemplo:
   
     cd C:/Users/Voce/IC_MICLab
   
@@ -39,7 +48,7 @@ Em seguida, insira o seguinte comando:
 
 - `-t`: Abreviação para *tag*. Deve ser seguido pelo nome escolhido para imagem que o Docker irá criar
 
-Não se esqueça do ` .` no final! A construção deve demorar cerca de 100 a 250segs. O terminal deve indicar a construção da imagem. 
+Não se esqueça do ` .` no final! A construção pode demorar cerca de 100 a 250segs para a versão `main`. O terminal deve indicar a construção da imagem. 
 
 ### 3°: Run da imagem criada
 Agora para o Docker iniciar o container com a imagem que criamos, devemos utilizar o seguinte comando:
@@ -51,17 +60,17 @@ Ou para versão simplificada, apenas:
     docker run -d --name 'nome' -p 8042:8042 --rm 'nomedaimagemescolhida'
 
 - `-d`: Abreviação para *detached*. Permite rodar o container em segundo fundo, permitindo o uso do terminal.
-- `-v`: Permite compartilhar arquivos gerados dentro do container para fora dele. Necessário para a função *analyze*, para salvar o arquivo *.json* que contém os resultados dos modelos pré-treinados. Sempre deve ser seguido pelo diretório que possui a pasta *results* seguido por */etc/orthanc/results* (definido pelo arquivo de configuração).
+- `-v`: Permite compartilhar arquivos gerados dentro do container para fora dele. Necessário para a função *analyze*, para salvar o arquivo *.json* que contém os resultados dos modelos pré-treinados, e para função *create*, para salver os *SR*s que serão criados. Sempre deve ser seguido pelo diretório que possui as pastas seguido por */etc/orthanc/results_ou_SR* (definido pelo arquivo de configuração).
 - `--name`: Nomeia o container, facilitando o uso posteriormente. Deve ser seguido por algum nome escolhido.
-- `-p`: Mapeia ports entre o host e o container, permitindo acessar serviços do container fora dele. Deve ser seguido com a port do host:port do container.
+- `-p`: Mapeia ports entre o host e o container, permitindo acessar serviços do container fora dele. Deve ser seguido com o host:port do container.
 - `--rm`: Remove a imagem e traços do container após utilizá-lo, liberando espaço (opcional).
 
-A imagem deve estar funcionando. Para testar, pode utilizar `docker ps` para indicar o container que está em uso, assim como entrar em um localhost (a imagem configura a port 8042 automaticamente, assim, ficaria como: `localhost:8042`). Como já dito, será necessário inserir um usuário e uma senha para entrar no servidor OrthanC. Como default, nós temos usuário:senha como: `you:yourpassword`.
+A imagem deve estar funcionando. Para testar, pode-se utilizar o comando `docker ps` para indicar o container que está em uso, assim como entrar em um localhost (a imagem configura a port 8042 automaticamente, assim, ficaria como: `localhost:8042`). Como já dito, será necessário inserir um usuário e uma senha para entrar no servidor OrthanC. Como default, nós temos usuário:senha como: `you:yourpassword`.
 
 Todas estas configurações estão presentes no arquivo `configuration.json` presente no repositório, e podem ser modificadas a qualquer momento. O [site de OrthanC](https://orthanc.uclouvain.be/book/users/configuration.html) pode auxiliar na criação do arquivo de configuração específico desejado.
 
 ### 4°: Utilização do script Python
-Primeiro, verifique se o diretório com o Dockerfile possui a pasta /scripts com o script de Python `script.py`, assim como uma pasta DICOM onde você deverá armazenar os arquivos DICOM que serão enviados ao servidor. Assim, posteriormente, com o container sendo utilizado, deve-se inserir o comando:
+Primeiro, verifique se o diretório com o Dockerfile possui a pasta /scripts com o script de Python `script.py`, assim como uma pasta DICOM onde você deverá armazenar os arquivos DICOM que serão enviados ao servidor (na versão *main*, também deve haver uma pasta *results* e *SR*). Assim, posteriormente, com o container sendo utilizado, deve-se inserir o comando:
 
     docker exec -it 'nome' python /usr/local/bin/script.py
   
