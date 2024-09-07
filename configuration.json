@@ -1,0 +1,12 @@
+{
+  "Name" : "MyOrthanc",
+  "RemoteAccessAllowed" : true,
+  "RegisteredUsers" : {
+
+     "you" : "yourpassword"
+
+  },
+  "Plugins" : [ "." ],
+  "PythonScript" : "/etc/orthanc/script.py",
+  "DicomPort": 104
+}
