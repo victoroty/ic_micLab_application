@@ -63,7 +63,7 @@ Todas estas configurações estão presentes no arquivo `configuration.json` pre
 ### 4°: Utilização do script Python
 Primeiro, verifique se o diretório com o Dockerfile possui a pasta /scripts com o script de Python `script.py`, assim como uma pasta DICOM onde você deverá armazenar os arquivos DICOM que serão enviados ao servidor. Assim, posteriormente, com o container sendo utilizado, deve-se inserir o comando:
 
-    `docker exec -it 'nome' python /usr/local/bin/script.py`
+    docker exec -it 'nome' python /usr/local/bin/script.py
   
 - `-it`: Abreviação para *interactive*. Permite interagir com o próprio shell do container através do terminal.
 - `python`: Inicia o plugin Python da imagem. Deve ser seguido com o diretório, especificado no configuration.json, onde estará o script Python após o início do container.
